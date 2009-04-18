@@ -1,6 +1,6 @@
 (defun tsp_draw ( / dcl_id)
-  (load "d:\\sergej\\src\\acad\\tsp.lsp")
-  (if (< (setq dcl_id (load_dialog "d:\\sergej\\src\\acad\\tsp.dcl")) 0) (exit))
+  (load "tsp.lsp")
+  (if (< (setq dcl_id (load_dialog "tsp.dcl")) 0) (exit))
   (if (not (new_dialog "tsp" dcl_id)) (exit))
   
   (action_tile "accept"
