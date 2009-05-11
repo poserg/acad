@@ -7,5 +7,6 @@ tsp: dialog{label="Draw tsp";
 	} // column
 	:edit_box {label="Число пролетов, m"; key="m"; value="3"; edit_width="6";}
 	:edit_box {label="Длина здания, L"; key="L"; value="72"; edit_width="6";}
+	:edit_box {label="Масштаб"; key="scale"; value="400"; edit_width="6";}
 	ok_cancel;
 } // dialog
