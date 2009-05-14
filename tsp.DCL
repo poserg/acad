@@ -8,5 +8,7 @@ tsp: dialog{label="Draw tsp";
 	:edit_box {label="Число пролетов, m"; key="m"; value="3"; edit_width="6";}
 	:edit_box {label="Длина здания, L"; key="L"; value="72"; edit_width="6";}
 	:edit_box {label="Масштаб"; key="scale"; value="400"; edit_width="6";}
+	:edit_box {label="Расстояние"; key="rasst"; value="2"; edit_width="6";}
+	:edit_box {label="Количество"; key="kolvo"; value="8"; edit_width="6";}
 	ok_cancel;
 } // dialog
