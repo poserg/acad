@@ -1,11 +1,14 @@
 ;выводит конкретную стоянку
-(defun getNote (x y n koef)
-  (entmake (list (vl-list* 0 "CIRCLE") (list 10 x y 0.0) (vl-list* 40 0.25)))
-  (entmake (list (vl-list* 0 "MTEXT") (vl-list* 100 "AcDbEntity") (vl-list* 100 "AcDbMText") (list 10 (- x 5) (- y (/ koef 2)) 0.0) (vl-list* 1 (strcat "Cm." (itoa n))))) ;ЗАЧЕМ 100 ДВА РАЗА???
+(defun getNote (x y n koef LCircle LText)
+  (entmake (list (vl-list* 0 "CIRCLE") (list 10 x y 0.0) (vl-list* 40 0.25) (vl-list* 8 LCircle)))
+  (entmake (list (vl-list* 0 "MTEXT") (vl-list* 100 "AcDbEntity") (vl-list* 100 "AcDbMText") (list 10 (- x 5) (- y (/ koef 2)) 0.0) (vl-list* 1 (strcat "Cm." (itoa n))) (vl-list* 8 LText))) ;ЗАЧЕМ 100 ДВА РАЗА???
   )
 
 ;выводит все позиции
-(defun makeStr (L k m Bkr Bsr koef rasst kolvo / x y i n flag par s)
+(defun makeStr (L k m Bkr Bsr koef rasst kolvo / x y i n flag par s LCircle LText)
+  (setq LCircle "TSP_position" LText "TSP_txt")
+  (entmake (list (vl-list* 0 "LAYER") (vl-list* 100 "AcDbSymbolTableRecord") (vl-list* 100 "AcDbLayerTableRecord") (vl-list* 2 LCircle) (vl-list* 70 0) (vl-list* 62 1)))
+  (entmake (list (vl-list* 0 "LAYER") (vl-list* 100 "AcDbSymbolTableRecord") (vl-list* 100 "AcDbLayerTableRecord") (vl-list* 2 LText) (vl-list* 70 0) (vl-list* 62 3)))
   ;масштабирование
   (setq L (* L koef) k (* k koef) Bkr (* Bkr koef) Bsr (* Bsr koef))
   (setq i 1 j 1 n 1)
@@ -29,7 +32,7 @@
 	 (setq y (- (* k (- m j -1)) (* 4 koef)))
 	 (while (<= i (/ L (* 2 s)))
 		(setq x (+ x (* 2 s par)))
-		(getNote x y n koef)
+		(getNote x y n koef LCircle LText)
 		(setq i (1+ i) n (1+ n))
 		)
 	 ;если количество колонн вдлину четное число,
@@ -37,7 +40,7 @@
 	 (if (= (/ L Bkr 2) (/ L Bkr 2.0))
 	   (progn
 	     (if (= par 1) (setq x L) (setq x 0))
-	     (getNote x y n koef)
+	     (getNote x y n koef LCircle LText)
 	     (setq n (1+ n))
 	     )
 	   )
@@ -60,7 +63,7 @@
 	 (setq y (* k (- m j -0.5)))
 	 (while (<= i kolvo)
 		(setq x (+ x (* Bsr par)))
-		(getNote x y n koef)
+		(getNote x y n koef LCircle LText)
 		(setq i (1+ i) n (1+ n)) 
 		)
 	 (setq j (1+ j))
@@ -73,13 +76,13 @@
   (setq s Bkr i 1 y (+ (* k m) (* 7 koef)) x (* -1 s))
   (while (<= i (/ L (* 2 s)))
 	 (setq x (+ x (* 2 s)))
-	 (getNote x y n koef)
+	 (getNote x y n koef LCircle LText)
 	 (setq n (1+ n) i (1+ i))
 	 )
   (if (/= (/ L Bkr 2) (/ L Bkr 2.0))
     (progn
       (setq x L)
-      (getNote x y n koef)
+      (getNote x y n koef LCircle LText)
       (setq n (1+ n))
       )
     )
@@ -87,18 +90,46 @@
   (setq i 1 y (* -7 koef) x (+ L s))
   (while (<= i (/ L (* 2 s)))
 	 (setq x (- x (* 2 s)))
-	 (getNote x y n koef)
+	 (getNote x y n koef LCircle LText)
 	 (setq n (1+ n) i (1+ i))
 	 )
   (if (/= (/ L Bkr 2) (/ L Bkr 2.0))
     (progn
       (setq x 0)
-      (getNote x y n koef)
+      (getNote x y n koef LCircle LText)
       (setq n (1+ n))
       )
     )
 
   (princ)
+  )
+
+(defun makeMark (L k m Bkr koef / i x y LName mark)
+  (setq mark (list "А" "Б" "В" "Г" "Д" "Е"))
+  (setq L (* L koef) k (* k koef) Bkr (* Bkr koef) LName "TSP_mark")
+  (entmake (list (vl-list* 0 "LAYER") (vl-list* 100 "AcDbSymbolTableRecord") (vl-list* 100 "AcDbLayerTableRecord") (vl-list* 2 LName) (vl-list* 70 0) (vl-list* 62 5)))
+
+  ;горизонтальные отметки: 1,2,3,....
+  (setq i 1)
+  (setq y (- (* -7 koef) 17))
+  (while (<= i (1+ (/ L Bkr)))
+	 (setq x (* (1- i) Bkr))
+	 (entmake (list (vl-list* 0 "LINE") (list 10 x y) (list 11 x (- y 7)) (vl-list* 8 LName)))
+	 (entmake (list (vl-list* 0 "CIRCLE") (list 10 x (- y 12)) (vl-list* 40 5) (vl-list* 8 LName)))
+	 (entmake (list (vl-list* 0 "MTEXT") (vl-list* 100 "AcDbEntity") (vl-list* 100 "AcDbMText") (list 10 (- x 1) (- y 10)) (vl-list* 1 (itoa i)) (vl-list* 8 LName)))
+	 (setq i (1+ i))
+	 )
+
+  ;вертикальные отметки: А,Б,В,...
+  (setq i 1)
+  (setq x (- (/ k -2) 17))
+  (while (<= i (1+ m))
+	 (setq y (* k (1- i)))
+	(entmake (list (vl-list* 0 "LINE") (list 10 x y) (list 11 (- x 7) y) (vl-list* 8 LName)))
+	 (entmake (list (vl-list* 0 "CIRCLE") (list 10 (- x 12) y) (vl-list* 40 5) (vl-list* 8 LName)))
+	 (entmake (list (vl-list* 0 "MTEXT") (vl-list* 100 "AcDbEntity") (vl-list* 100 "AcDbMText") (list 10 (- x 13) (1+ y)) (vl-list* 1 (chr (+ 191 i))) (vl-list* 8 LName)))
+	 (setq i (1+ i))
+	 )
   )
 
 ;main()
@@ -113,6 +144,7 @@
 		 "(setq Bkr (atoi (get_tile \"Bkr\"))) (* k m) (setq koef (/ 1000.0 (atoi (get_tile \"scale\")))))"
 		 "(myfunc 0 k L (* k (- m 2)) (setq Bsr (atoi (get_tile \"Bsr\"))) k koef)"
 		 "(makeStr L k m Bkr Bsr koef (atoi (get_tile \"rasst\")) (atoi (get_tile \"kolvo\")))"
+		 "(makeMark L k m Bkr koef)"
 		 "(done_dialog)"
 		 )
 	       )
