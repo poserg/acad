@@ -1,21 +1,29 @@
+;выводит конкретную стоянку
 (defun getNote (x y n koef)
   (entmake (list (vl-list* 0 "CIRCLE") (list 10 x y 0.0) (vl-list* 40 0.25)))
-  (entmake (list (vl-list* 0 "MTEXT") (vl-list* 100 "AcDbEntity") (vl-list* 100 "AcDbMText") (list 10 (- x 5) (- y (/ koef 2)) 0.0) (vl-list* 1 (strcat "Cm." (itoa n)))))
+  (entmake (list (vl-list* 0 "MTEXT") (vl-list* 100 "AcDbEntity") (vl-list* 100 "AcDbMText") (list 10 (- x 5) (- y (/ koef 2)) 0.0) (vl-list* 1 (strcat "Cm." (itoa n))))) ;ЗАЧЕМ 100 ДВА РАЗА???
   )
 
+;выводит все позиции
 (defun makeStr (L k m Bkr Bsr koef rasst kolvo / x y i n flag par s)
-  (setq L (* L koef))
-  (setq k (* k koef))
-  (setq Bkr (* Bkr koef))
-  (setq Bsr (* Bsr koef))
+  ;масштабирование
+  (setq L (* L koef) k (* k koef) Bkr (* Bkr koef) Bsr (* Bsr koef))
   (setq i 1 j 1 n 1)
+
+  ;позиция 1
+  ;стоянки для крана при монтаже колонн
   (while (<= j (1+ m))
+	 ;разделение на четные и не четные ряды.
+	 ;в нечетных нумерация слева-направа, в четных - справа-налево
 	 (if (= (/ j 2) (/ j 2.0)) (setq flag 0) (setq flag 1))
 	 ;(if (or (= j 1) (= j (1+ m))) (setq s Bkr) (setq s Bsr)) 
 	 (setq s Bkr)
+	 ;начальная координата по x в зависимости от четности ряда
 	 (if (= flag 1) (setq x (- 0 (* s 1.5)) par 1)
 	   (setq x (+ (* s 1.5) L) par -1)
 	   )
+	 ;если шаг колонн крайних и средних рядов различается, 
+	 ;то на средних координата по x ставится под колоннами
 	 (if (and (/= Bkr Bsr) (/= j 1) (/= j (1+ m))) (setq x (- x (* s 0.5 par))))
 	 (setq i 1)
 	 (setq y (- (* k (- m j -1)) (* 4 koef)))
@@ -24,6 +32,8 @@
 		(getNote x y n koef)
 		(setq i (1+ i) n (1+ n))
 		)
+	 ;если количество колонн вдлину четное число,
+	 ;то добавляем еще одну подпись под последней колонной
 	 (if (= (/ L Bkr 2) (/ L Bkr 2.0))
 	   (progn
 	     (if (= par 1) (setq x L) (setq x 0))
@@ -34,7 +44,10 @@
 	 (setq j (1+ j))
 	 ) 
 
-  ;2 позиция	
+  ;2 позиция
+  ;монтаж элементов покрытия
+  ;расстояние и количество нужно считать вручную
+  ;и задать в диалоговом окне
   (setq rasst (* rasst koef))
   (setq i 1 j 1)
   (while (<= j m)
@@ -55,6 +68,8 @@
 
 
   ;3 позиция
+  ;монтаж стеновых панелей
+  ;верхние стояки
   (setq s Bkr i 1 y (+ (* k m) (* 7 koef)) x (* -1 s))
   (while (<= i (/ L (* 2 s)))
 	 (setq x (+ x (* 2 s)))
@@ -68,6 +83,7 @@
       (setq n (1+ n))
       )
     )
+  ;нижние стоянки
   (setq i 1 y (* -7 koef) x (+ L s))
   (while (<= i (/ L (* 2 s)))
 	 (setq x (- x (* 2 s)))
@@ -85,6 +101,7 @@
   (princ)
   )
 
+;main()
 (defun tsp_draw ( / L k m Bkr Bsr dcl_id koef)
   (load "tsp.lsp")
   (if (< (setq dcl_id (load_dialog "tsp.dcl")) 0) (exit))
