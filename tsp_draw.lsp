@@ -52,19 +52,18 @@
   ;расстояние и количество нужно считать вручную
   ;и задать в диалоговом окне
   (setq rasst (* rasst koef))
+  (setq s rasst)
   (setq i 1 j 1)
   (while (<= j m)
 	 (if (= (/ j 2) (/ j 2.0)) (setq flag 0) (setq flag 1))
-	 (setq s rasst)
-	 (if (= flag 1) (setq x (- 0 Bsr (* -1 s)) par 1)
-	   (setq x (+ s (* -1 s) Bsr L) par -1)
+	 (if (= flag 1) (setq x s par 1)
+	   (setq x (- L s) par -1)
 	   )
 	 (setq i 1)
 	 (setq y (* k (- m j -0.5)))
 	 (while (<= i kolvo)
-		(setq x (+ x (* Bsr par)))
 		(getNote x y n koef LCircle LText)
-		(setq i (1+ i) n (1+ n)) 
+		(setq x (+ x (* Bsr par)) i (1+ i) n (1+ n)) 
 		)
 	 (setq j (1+ j))
 	 )
@@ -104,8 +103,7 @@
   (princ)
   )
 
-(defun makeMark (L k m Bkr koef / i x y LName mark)
-  (setq mark (list "А" "Б" "В" "Г" "Д" "Е"))
+(defun makeMark (L k m Bkr koef / i x y LName)
   (setq L (* L koef) k (* k koef) Bkr (* Bkr koef) LName "TSP_mark")
   (entmake (list (vl-list* 0 "LAYER") (vl-list* 100 "AcDbSymbolTableRecord") (vl-list* 100 "AcDbLayerTableRecord") (vl-list* 2 LName) (vl-list* 70 0) (vl-list* 62 5)))
 
@@ -143,7 +141,7 @@
 		 "(myfunc 0 0 (setq L (atoi (get_tile \"L\"))) (* (setq k (atoi (get_tile \"k\"))) (setq m (atoi (get_tile \"m\"))))"
 		 "(setq Bkr (atoi (get_tile \"Bkr\"))) (* k m) (setq koef (/ 1000.0 (atoi (get_tile \"scale\")))))"
 		 "(myfunc 0 k L (* k (- m 2)) (setq Bsr (atoi (get_tile \"Bsr\"))) k koef)"
-		 "(makeStr L k m Bkr Bsr koef (atoi (get_tile \"rasst\")) (atoi (get_tile \"kolvo\")))"
+		 "(makeStr L k m Bkr Bsr koef (atof (get_tile \"rasst\")) (atoi (get_tile \"kolvo\")))"
 		 "(makeMark L k m Bkr koef)"
 		 "(done_dialog)"
 		 )
